@@ -40,23 +40,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.keyring.impl;
-
-import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.prefs.Preferences;
+package org.netbeans.modules.keyring.utils;
 
 public class Utils {
 
     private Utils() {}
 
-    private static final Logger LOG = Logger.getLogger(Utils.class.getName());
-
     public static byte[] chars2Bytes(char[] chars) {
         byte[] bytes = new byte[chars.length * 2];
         for (int i = 0; i < chars.length; i++) {
-            bytes[i * 2] = (byte) (chars[i] / 256);
+            bytes[i * 2] = (byte) ((int)chars[i] / 256);
             bytes[i * 2 + 1] = (byte) (chars[i] % 256);
         }
         return bytes;
@@ -65,21 +58,8 @@ public class Utils {
     public static char[] bytes2Chars(byte[] bytes) {
         char[] result = new char[bytes.length / 2];
         for (int i = 0; i < result.length; i++) {
-            result[i] = (char) (((int) bytes[i * 2]) * 256 + (int) bytes[i * 2 + 1]);
+            result[i] = (char) (((bytes[i * 2] & 0x00ff) * 256) + (bytes[i * 2 + 1] & 0x00ff));
         }
         return result;
     }
-
-    /** Tries to set permissions on preferences storage file to -rw------- */
-    public static void goMinusR(Preferences p) {
-        File props = new File(System.getProperty("netbeans.user"), ("config/Preferences" + p.absolutePath()).replace('/', File.separatorChar) + ".properties");
-        if (props.isFile()) {
-            props.setReadable(false, false); // seems to be necessary, not sure why
-            props.setReadable(true, true);
-            LOG.log(Level.FINE, "chmod go-r {0}", props);
-        } else {
-            LOG.log(Level.FINE, "no such file to chmod: {0}", props);
-        }
-    }
-
 }
